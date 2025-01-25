@@ -1,6 +1,5 @@
 import argparse
 import logging
-import os
 from pathlib import Path
 
 from time import perf_counter
@@ -35,14 +34,10 @@ def main(args: argparse.Namespace) -> None:
     out_name = f"{args.segment_name}_{data_year}.parquet"
     
     logger.info("Exporting...")
-    if args.to_aws_s3:
+    if args.to_s3:
         logger.info("Sending decoded segment to s3 bucket...")
         
-        AmazonS3_tool = AmazonS3(
-            region_name = os.environ["region_name"],
-            aws_access_key_id = os.environ["aws_access_key_id"],
-            aws_secret_access_key = os.environ["aws_secret_access_key"]
-            )
+        AmazonS3_tool = AmazonS3()
         
         AmazonS3_tool.upload_table_to_s3_bucket(table = out_table, 
                                                 how = "parquet",
@@ -62,7 +57,7 @@ if __name__ == "__main__":
     parser.add_argument("--config_file", "-c", help = ".yaml file with 'segment_level_codes' and 's3_bucket' keys, plus any segments of interests as keys")
     parser.add_argument("--segment_name", "-s", help = "segment of interest to decode; it must be present as key in config_file")
     
-    parser.add_argument("--to_aws_s3",
+    parser.add_argument("--to_s3",
                         help = ("if toggled, the decoded segment won't be exported to output_dir and instead be "
                                 "uploaded to an s3 bucket using secrets configured as environment variables"),
                         action = "store_true")

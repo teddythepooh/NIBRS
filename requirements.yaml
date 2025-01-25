@@ -8,12 +8,11 @@ dependencies:
   - pip=24.2
   - pandas=2.2.2
   - numpy=2.1.1
-  - ipykernel=6.29.5
+  #- ipykernel=6.29.5 # This is in case I need to use a Jupyter notebook.
   - boto3=1.35.12
-  - s3fs=2024.9.0
+  - s3fs=2024.9.0 # I no longer use this. Install this into your env if you would like to use my AmazonS3asFS class in src/utils/aws_integration.py.
   - psycopg2=2.9.9
   - sqlalchemy=2.0.34
   - pyarrow=17.0.0
   - pyyaml=6.0.2
-  - pip:
-      - polars==1.7.1
+  - polars=1.7.1

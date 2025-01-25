@@ -2,6 +2,7 @@ import sqlalchemy
 import psycopg2
 import polars as pl
 from io import StringIO
+from .raw_tables import Base
 
 # https://www.psycopg.org/docs/cursor.html
 # https://www.psycopg.org/docs/connection.html
@@ -96,4 +97,35 @@ class Postgres:
         finally:
             connection.close()
             nibrs_db_connection.close()
-
+    
+    @staticmethod
+    def construct_copy_sql_code(table_name: str, columns: list) -> str:
+        cols = "(" + ",".join(columns) + ")"
+        
+        return f"COPY {table_name} {cols} FROM STDIN with CSV HEADER"
+    
+    def ingest_raw_table_into_sql(self, table_to_ingest: pl.DataFrame, sql_table: str, raw_table_metadata: Base) -> None:
+        '''
+        table_to_ingest: polars dataframe
+        sql_table: name of sql_table, including schema (e.g., raw.table_name)
+        raw_table_metadata: declarative base containing raw tables' metadata
+        
+        writes out table_to_ingest to file-like object as .csv, then ingests the file into sql_table through COPY using
+        a psycopg2 connection
+        '''
+        if list(table_to_ingest.columns) == list(raw_table_metadata.metadata.tables[sql_table].columns.keys()):
+            csv_buffer = StringIO()
+            
+            table_to_ingest.write_csv(csv_buffer)
+            
+            csv_buffer.seek(0)
+            
+            with self._create_psycopg2_connection() as con:
+                with con.cursor() as cur:
+                    cur.copy_expert(sql = Postgres.construct_copy_sql_code(table_name = sql_table, columns = table_to_ingest.columns), 
+                                    file = csv_buffer)
+            
+            con.close()
+            cur.close()
+        else:
+            raise Exception("Mismatched columns.")
