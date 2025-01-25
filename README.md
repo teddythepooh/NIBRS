@@ -39,9 +39,9 @@ Through the FBI Crime Data Explorer (CDE), the FBI releases National Incident-Ba
 2. To send the decoded data to an S3 bucket, as defined in `configuration/col_specs.yaml`, store your secrets as environment variables: `region_name`, `aws_access_key_id`, and `aws_secret_access_key`. Note that I set up my Makefile to send the decoded data directly to my S3 bucket. However, if you would like to store them locally, delete the to_s3 flag in line 27.
 3. Activate virtual environment.
 4. Run `make`.
-![image](https://github.com/teddythepooh/NIBRS-Master-Files-Decoder/blob/aws_integration/images/nibrs_decoder_implementation.png)
+![image](images/nibrs_decoder_implementation.png)
 5. The decoded data segments are now in Amazon S3.
-![image](https://github.com/teddythepooh/NIBRS-Master-Files-Decoder/blob/aws_integration/images/s3_bucket.png)
+![image](images/s3_bucket.png)
 
 ### AWS Resources
 1. Amazon S3 pricing: https://aws.amazon.com/s3/pricing/
