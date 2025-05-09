@@ -1,7 +1,8 @@
 import argparse
 import logging
-from pathlib import Path
+import re
 
+from pathlib import Path
 from time import perf_counter
 
 from utils import general_utils, NIBRSDecoder, AmazonS3
@@ -16,11 +17,11 @@ def main(args: argparse.Namespace) -> None:
         log_file = f"{Path(__file__).stem}.log"
         )
         
-    data_year = Path(args.nibrs_master_file).name[0:4]
-    
-    if not data_year.isdigit():
-        logger.warning("Double check args.nibrs_master_file. This text file's file name must be "
-                       "prefixed with the year (e.g., 2022).")
+    match = re.search(r"nibrs-([0-9]{4})\.txt", Path(args.nibrs_master_file).name)
+    if match:
+        data_year = match.group(1)
+    else:
+        logger.warning(f"Expected file name of form 'nibrs-YYYY.txt', but got {args.nibrs_master_file}")
         
     logger.info(f"Decoding {args.segment_name}...")
     
@@ -53,7 +54,7 @@ def main(args: argparse.Namespace) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--output_dir", "-o")
-    parser.add_argument("--nibrs_master_file", "-f", help = "path to the NIBRS fixed-length, ASCII text file")
+    parser.add_argument("--nibrs_master_file", "-f", help = "path to the NIBRS fixed-length, ASCII .txt file")
     parser.add_argument("--config_file", "-c", help = ".yaml file with 'segment_level_codes' and 's3_bucket' keys, plus any segments of interests as keys")
     parser.add_argument("--segment_name", "-s", help = "segment of interest to decode; it must be present as key in config_file")
     
