@@ -1,0 +1,19 @@
+name: nibrs
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - make=4.4.1
+  - python=3.10.0
+  - pip=24.2
+  - boto3=1.35.12
+  - pandas=2.2.2
+  - numpy=2.1.1
+  - polars=1.7.1
+  - psycopg2=2.9.9
+  - sqlalchemy=2.0.34
+  - pyarrow=17.0.0
+  - pyyaml=6.0.2
+  #- s3fs=2024.9.0
+  - pip:
+      - zipfile-deflate64==0.2.0 # This is required to unzip the NIBRS master files in Python.

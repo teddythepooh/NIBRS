@@ -3,23 +3,40 @@ CURRENT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 raw_data_dir := $(CURRENT_DIR)/raw_data
 output_dir := $(CURRENT_DIR)/output
 
-nibrs_2022 := $(raw_data_dir)/2022_NIBRS_NATIONAL_MASTER_FILE_ENC.txt
-nibrs_2023 := $(raw_data_dir)/2023_NIBRS_NATIONAL_MASTER_FILE.txt
+scripts := $(CURRENT_DIR)/src
+core_logic := $(scripts)/utils/nibrs_decoder.py
+unzipper := $(scripts)/unzip.py
+decoder := $(scripts)/decode_segments.py
 
-segments := administrative \
+SEGMENTS := administrative \
 	offense \
 	arrestee \
 	victim
 
-nibrs_ascii_files := $(nibrs_2022) \
-	$(nibrs_2023)
+YEARS := 2022 \
+	2023
 
-flags = $(foreach segment,$(segments),$(foreach file,$(nibrs_ascii_files),$(output_dir)/$(segment)_from_$(notdir $(file))))
+### TARGETS
+# There are the NIBRS fixed-length, ASCII .txt files.
+ASCII_FILES := $(foreach year,$(YEARS),$(raw_data_dir)/nibrs-$(year).txt)
+
+# These are dummy flags that signify whether the decoded NIBRS segments in 
+# Amazon S3 are indeed up-to-date with their underlying dependencies.
+FLAGS := $(foreach segment,$(SEGMENTS),\
+			$(foreach file,$(ASCII_FILES),\
+				$(output_dir)/$(segment)_segment_from_$(notdir $(file))))
+
+### RULES
+define NIBRS_UNZIP
+$(raw_data_dir)/nibrs-$(1).txt: $(raw_data_dir)/nibrs-$(1).zip $(unzipper) $(core_logic)
+	@echo Unzipping $$< ...
+	python $(unzipper) -f $$<
+endef
 
 define NIBRS_DECODER
-$(output_dir)/$(1)_from_$(notdir $(2)): $(2)
+$(output_dir)/$(1)_segment_from_$(notdir $(2)): $(2) $(decoder) $(core_logic)
 	@echo Decoding $(1) segment from $(notdir $(2))...
-	python src/decode_segments.py \
+	python $(decoder) \
 		--output_dir=$(output_dir) \
 		--nibrs_master_file=$(2) \
 		--config_file=configuration/col_specs.yaml \
@@ -27,7 +44,12 @@ $(output_dir)/$(1)_from_$(notdir $(2)): $(2)
 		--to_s3 && echo "Done" > $$@
 endef
 
-$(foreach file,$(nibrs_ascii_files),$(foreach segment,$(segments),$(eval $(call NIBRS_DECODER,$(segment),$(file)))))
+$(foreach year,\
+	$(YEARS),$(eval $(call NIBRS_UNZIP,$(year))))
+
+$(foreach file,$(ASCII_FILES),\
+	$(foreach segment,$(SEGMENTS),\
+		$(eval $(call NIBRS_DECODER,$(segment),$(file)))))
 
 .DEFAULT_GOAL = all
-all: $(flags)
+all: $(FLAGS)
