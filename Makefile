@@ -20,7 +20,7 @@ YEARS := 2022 \
 # There are the NIBRS fixed-length, ASCII .txt files.
 ASCII_FILES := $(foreach year,$(YEARS),$(raw_data_dir)/nibrs-$(year).txt)
 
-# These are dummy flags that signify whether the decoded NIBRS segments in 
+# These are dummy flags that signify whether the decoded NIBRS segments on
 # Amazon S3 are indeed up-to-date with their underlying dependencies.
 FLAGS := $(foreach segment,$(SEGMENTS),\
 			$(foreach file,$(ASCII_FILES),\
@@ -44,8 +44,8 @@ $(output_dir)/$(1)_segment_from_$(notdir $(2)): $(2) $(decoder) $(core_logic)
 		--to_s3 && echo "Done" > $$@
 endef
 
-$(foreach year,\
-	$(YEARS),$(eval $(call NIBRS_UNZIP,$(year))))
+$(foreach year,$(YEARS),\
+	$(eval $(call NIBRS_UNZIP,$(year))))
 
 $(foreach file,$(ASCII_FILES),\
 	$(foreach segment,$(SEGMENTS),\
