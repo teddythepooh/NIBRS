@@ -1,6 +1,6 @@
 # National Crime Data Warehouse (NIBRS)
 
-This is—or rather will be—a national crime data warehouse, engineered using Python and PostgreSQL with Amazon Web Services (AWS) integration. It is inspired by my work as a Research Intelligence Engineer at Urban Labs, a research organization dedicated to analytics for social good. The Labs are comprised of five labs, but my primary function falls under the Crime Lab. I aim to
+This is—or rather will be—a national crime data warehouse, engineered using Python and PostgreSQL with Amazon Web Services (AWS) integration. It is inspired by my work as a Quantitative Researcher at Urban Labs, a research organization dedicated to analytics for social good. The Labs are comprised of five labs, but my primary function falls under the Crime Lab. I aim to
 1. build data engineering competencies, such as dbt and Apache Airflow, through an end-to-end ELT pipeline;
 2. and get comfortable with the AWS ecosystem, both interactively and through the Python API (`boto3`).
 
