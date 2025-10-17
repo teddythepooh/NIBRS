@@ -1,5 +1,5 @@
 import argparse
-from utils import general_utils
+from core import general
 from db_design import Postgres, raw_tables
 from pathlib import Path
 
@@ -27,7 +27,7 @@ def main(config_file: dict) -> None:
     
     logs_dir = Path("logs")
     logs_dir.mkdir(exist_ok = True)
-    logging = general_utils.create_logger(log_file = logs_dir.joinpath(f"{Path(__file__).stem}.log"))
+    logging = general.create_logger(log_file = logs_dir.joinpath(f"{Path(__file__).stem}.log"))
     
     logging.info("Creating database and schemas...")
     try:
@@ -53,6 +53,6 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    config = general_utils.load_yaml(args.c)
+    config = general.load_yaml(args.c)
     
     main(config_file = config)
