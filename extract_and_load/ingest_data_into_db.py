@@ -1,10 +1,10 @@
 import argparse
-from utils import general_utils, AmazonS3
+from core import general, AmazonS3
 from db_design import Postgres, raw_tables
 
 def main(args: argparse.Namespace):
-    config = general_utils.load_yaml(args.config_file)
-    postgres_config = general_utils.load_yaml(args.postgres_config)
+    config = general.load_yaml(args.config_file)
+    postgres_config = general.load_yaml(args.postgres_config)
     
     AmazonS3_tool = AmazonS3()
     postgres_tool = Postgres(credentials = postgres_config.get("postgresql")["credentials"],
@@ -28,4 +28,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     main(args)
-    

@@ -1,26 +1,26 @@
-CURRENT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+#CURRENT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-raw_data_dir := $(CURRENT_DIR)/raw_data
-output_dir := $(CURRENT_DIR)/output
+raw_data_dir := ./raw_data
+output_dir := ./output
 
-scripts := $(CURRENT_DIR)/src
-core_logic := $(scripts)/utils/nibrs_decoder.py
+scripts := ./extract_and_load
+
+core_logic := $(scripts)/core/nibrs.py
 unzipper := $(scripts)/unzip.py
-decoder := $(scripts)/decode_segments.py
+decoder := $(scripts)/decode.py
 
 SEGMENTS := administrative \
 	offense \
 	arrestee \
 	victim
 
-YEARS := 2022 \
-	2023
+# Dynamically extract years from file names of form nibrs-${year}.zip in $(raw_data_dir).
+YEARS := $(patsubst $(raw_data_dir)/nibrs-%.zip,%,$(wildcard $(raw_data_dir)/nibrs-*.zip))
 
 ### TARGETS
-# There are the NIBRS fixed-length, ASCII .txt files.
 ASCII_FILES := $(foreach year,$(YEARS),$(raw_data_dir)/nibrs-$(year).txt)
 
-# These are dummy flags that signify whether the decoded NIBRS segments on
+# These are dummy flags that signify whether the NIBRS segments on
 # Amazon S3 are indeed up-to-date with their underlying dependencies.
 FLAGS := $(foreach segment,$(SEGMENTS),\
 			$(foreach file,$(ASCII_FILES),\
@@ -35,13 +35,13 @@ endef
 
 define NIBRS_DECODER
 $(output_dir)/$(1)_segment_from_$(notdir $(2)): $(2) $(decoder) $(core_logic)
-	@echo Decoding $(1) segment from $(notdir $(2))...
+	@echo Decoding $(1) segment from file $(notdir $(2))...
 	python $(decoder) \
 		--output_dir=$(output_dir) \
+		--config_file=configuration/col_specs.yml \
+		--to_s3 \
 		--nibrs_master_file=$(2) \
-		--config_file=configuration/col_specs.yaml \
-		--segment_name=$(1)_segment \
-		--to_s3 && echo "Done" > $$@
+		--segment_name=$(1)_segment && echo "Done" > $$@
 endef
 
 $(foreach year,$(YEARS),\

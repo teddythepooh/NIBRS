@@ -27,7 +27,7 @@ def load_yaml(file: Path) -> dict:
     except FileNotFoundError:
         raise FileNotFoundError(f"{file} not found.")
 
-def create_output_dir_and_logger(output_dir_str: str, log_file: str) -> tuple:
+def create_output_dir(output_dir_str: str, log_file: str) -> tuple:
     output_dir = Path(output_dir_str)
     logs_dir = output_dir.joinpath("logs")
     

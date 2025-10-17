@@ -109,7 +109,7 @@ class AmazonS3(AWSBase):
     '''
     def view_objects_in_s3_bucket(self, bucket_name: str, view_only: bool = False) -> list:
         '''
-        view_only: returns all objects from an s3 bucket as a list if True, otherwise the object names and file sizes
+        view_only: returns all objects from an S3 bucket as a list if True, otherwise the object names and file sizes
         are simply printed
         '''
         full_dict = self._create_client("s3").list_objects_v2(Bucket = bucket_name)
@@ -166,7 +166,7 @@ class AmazonS3(AWSBase):
         '''
         n_rows: if specified, only the first n_rows of the parquet file is read
         
-        loads a parquet file in-memory from an s3 bucket
+        loads a parquet file in-memory from an S3 bucket
         '''
         if object_name.endswith("parquet"):
             response = self.get_object_attributes_from_s3_bucket(bucket_name = bucket_name, object_name = object_name)
