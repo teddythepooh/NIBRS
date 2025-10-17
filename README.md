@@ -1,10 +1,10 @@
 # National Crime Data Warehouse (NIBRS)
 
-This is a data science and engineering solution that democratizes the FBI's national crime data assets at the incident level, eventually culminating to a machine learning model as a proof of concept. It is inspired by my work as a Quantitative Researcher at UChicago Urban Labs, a policy think tank with five practice areas: criminal justice, economic mobility, education, health, and sustainability. I aim to learn and apply four competencies:
-1. Dimensional data modeling: Implement data transformations in dbt using a star schema.
-2. Machine Learning: Predict the clearance probability of larceny thefts conditional on covariates such as property value and victim-offender relationships.
-3. Cloud Computing: Integrate Amazon Web Services (AWS) where *it makes sense.*
-4. Containerization: Deploy everything in a Docker container.
+This is a data science and engineering solution that democratizes the FBI's national crime data assets at the incident level, culminating to an on-prem data warehouse and a machine learning model as a proof of concept. It is inspired by my work as a Quantitative Researcher at UChicago Urban Labs, a policy think tank with five practice areas: criminal justice, economic mobility, education, health, and sustainability. I aim to learn and apply four competencies:
+1. **Dimensional data modeling**: Implement data transformations in dbt using a star schema.
+2. **Machine Learning**: Predict the clearance probability of larceny thefts conditional on covariates such as property value and victim-offender relationships.
+3. **Cloud Computing**: Integrate Amazon Web Services (AWS) where *it makes sense.*
+4. **Containerization**: Deploy everything in a Docker container.
 
 Disclaimer: This repo is strictly my *own* work outside regular business hours.
 
