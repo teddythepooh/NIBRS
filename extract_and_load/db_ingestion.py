@@ -3,6 +3,10 @@ from core import general, AmazonS3
 from db_design import Postgres, raw_tables
 
 def main(args: argparse.Namespace):
+    '''
+    Ingests raw tables from Amazon S3 into database. Idempotent controls are already in place to
+    prevent duplicate ingestion, so new files can be added onto the same S3 bucket for data refreshes.
+    '''
     config = general.load_yaml(args.config_file)
     postgres_config = general.load_yaml(args.postgres_config)
     
@@ -21,8 +25,8 @@ def main(args: argparse.Namespace):
         print(f"\nProcessing {file_name}...")
         
         table = S3.read_parquet_file_from_s3_bucket(
-            bucket_name=bucket_name,
-            object_name=file_name
+            bucket_name = bucket_name,
+            object_name = file_name
         )
         
         postgres.ingest_table_into_db(
@@ -34,8 +38,10 @@ def main(args: argparse.Namespace):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config_file", help=".yml file with s3_bucket key")
-    parser.add_argument("--postgres_config", help=".yml file with postgresql key, under which exists credentials and schemas keys")
+    parser.add_argument("--config_file", "-a", 
+                        help = ".yml file with s3_bucket key")
+    parser.add_argument("--postgres_config", "-b", 
+                        help = ".yml file with postgresql key, under which exists credentials and schemas keys")
     
     args = parser.parse_args()
     
