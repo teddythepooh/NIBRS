@@ -4,6 +4,8 @@ channels:
   - defaults
 dependencies:
   - make=4.4.1
+  - dbt-core=1.10.13
+  - dbt-postgres=1.9.1
   - python=3.10.0
   - pip=24.2
   - boto3=1.35.12
