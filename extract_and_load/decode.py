@@ -17,7 +17,7 @@ def get_year(file_name: str) -> int:
     else:
         raise ValueError(f"Expected file name as nibrs-${{year}}.txt, not {file_name}.")
 
-def main(args: argparse.Namespace) -> None:
+def main(args: argparse.Namespace):
     config = general.load_yaml(args.config_file)
     s3_bucket = config["s3_bucket"]
     
