@@ -5,6 +5,8 @@ postgresql:
     user: postgres
     port: 5432
   schemas:
+    - metadata
     - raw
+    - staging
     - cleaned
-    - crosswalks
+    - summarized
