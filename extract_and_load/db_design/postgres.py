@@ -1,22 +1,27 @@
 import sqlalchemy
 import psycopg2
 import polars as pl
+
 from datetime import date
 from io import StringIO
 
-from .raw_tables import Base
+from . import raw_tables
 from . import metadata_table
 
 # https://www.psycopg.org/docs/cursor.html
 # https://www.psycopg.org/docs/connection.html
-
+# https://docs.sqlalchemy.org/en/20/tutorial/data_select.html
+# https://docs.sqlalchemy.org/en/20/tutorial/data_insert.html
 # https://stackoverflow.com/questions/77160257/postgresql-create-database-cannot-run-inside-a-transaction-block
 
 class Postgres:
-    def __init__(self, credentials: dict, schemas: list) -> None:
+    raw_schema = raw_tables
+    metadata_schema = metadata_table
+    
+    def __init__(self, credentials: dict, schemas: list):
         '''
-        credentials: A dictionary where keys are host, dbname, user, and port.
-        schemas: A list of desired schemas.
+        credentials: A dictionary with host, dbname, user, and port keys.
+        schemas: A list of desired schemas. At minimum, it must have "raw" and "metadata."
         '''
         self.credentials = credentials
         self.schemas = schemas
@@ -56,12 +61,10 @@ class Postgres:
         
     def initialize_database(self, default_db: str = "postgres") -> None:
         '''
-        default_db: An existing db in postgresql, defaulting to 'postgres' if none specified.
+        default_db: An existing db in postgres, defaulting to 'postgres' if none specified.
         
-        Creates a db called self.credentials["dbname"] by connecting to default_db; checking for the existence of 
-        self.credentials["dbname"]; creates it if necessary; then establishing a new connection for schema creation. 
-        Unlike the subsequent methods below, this uses a psycopg2 connection make the switch. I was originally playing 
-        around with psycopg2, before I realized that many polars/pandas methods expect a SQLAlchemy engine.
+        Creates a db called self.credentials["dbname"], if none exists, by connecting to default_db then 
+        establishing a new connection for schema creation.
         '''
         try:
             credentials = self.credentials
@@ -103,41 +106,52 @@ class Postgres:
         
         return f"COPY {table_name} {cols} FROM STDIN with CSV HEADER"
 
-    def _is_table_ingested(self, table_name: str) -> bool:
+    def _is_file_ingested(self, source_file: str) -> bool:
         '''
-        Check if table_name has already been ingested.
+        source_file: File name to check in ingested_files table from metadata schema.
+        
+        Checks if source_file has already been ingested into db.
         '''
         engine = self.create_sqlalchemy_engine()
         
+        metadata = Postgres.metadata_schema.IngestedFiles
+        
+        stmt = sqlalchemy.select(metadata).where(metadata.table == source_file)
+        
         with sqlalchemy.orm.Session(engine) as session:
-            existing = session.query(metadata_table.IngestedFiles).filter_by(table = table_name).first()
-            return existing is not None
+            return bool(session.execute(stmt).first())
 
-    def _record_ingestion(self, table_name: str) -> None:
+    def _record_ingestion(self, source_file: str) -> None:
+        '''
+        source_file: File name to record in ingested_files table from metadata schema.
+        
+        Records source_file in ingested_files table along with today's date.
+        '''
         engine = self.create_sqlalchemy_engine()
         
-        with sqlalchemy.orm.Session(engine) as session:
-            new_record = metadata_table.IngestedFiles(
-                table = table_name,
-                ingestion_date = date.today()
-            )
-            session.add(new_record)
-            session.commit()
+        metadata = Postgres.metadata_schema.IngestedFiles
+        
+        stmt = sqlalchemy.insert(metadata).values(table = source_file, ingestion_date = date.today())
+        
+        with engine.connect() as conn:
+            conn.execute(stmt)
+            conn.commit()
     
-    def ingest_table_into_db(self, table_to_ingest: pl.DataFrame, db_table: str, table_base: Base, source_file: str) -> None:
+    def ingest_table_into_db(self, table_to_ingest: pl.DataFrame, db_table: str, source_file: str) -> None:
         '''
-        table_to_ingest: Polars dataframe.
+        table_to_ingest: Polars dataframe to ingest.
         db_table: Name of table in db, inclusive of schema (e.g., raw.arrests).
-        table_base: SQLAlchemy Base containing table metadata.
         source_file: Name of file from which table_to_ingest originates for metadata tracking (e.g., arrests_2022.parquet).
         
         Ingests table_to_ingest into db_table. If table_to_ingest was already ingested, it will be skipped.
         '''
-        if self._is_table_ingested(source_file):
+        if self._is_file_ingested(source_file):
             print(f"{source_file} was already ingested. Skipping...")
             return None
         
-        if list(table_to_ingest.columns) == list(table_base.metadata.tables[db_table].columns.keys()):
+        db_table_columns = Postgres.raw_schema.Base.metadata.tables[db_table].columns.keys()
+        
+        if list(table_to_ingest.columns) == list(db_table_columns):
             csv_buffer = StringIO()
             table_to_ingest.write_csv(csv_buffer)
             csv_buffer.seek(0)
@@ -145,7 +159,10 @@ class Postgres:
             with self._create_psycopg2_connection() as con:
                 with con.cursor() as cur:
                     cur.copy_expert(
-                        sql = Postgres.construct_copy_sql_code(table_name = db_table, columns = table_to_ingest.columns), 
+                        sql = Postgres.construct_copy_sql_code(
+                            table_name = db_table, 
+                            columns = table_to_ingest.columns
+                            ), 
                         file = csv_buffer
                     )
             

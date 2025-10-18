@@ -1,10 +1,10 @@
 from sqlalchemy import MetaData, String, Date
 from sqlalchemy.orm import DeclarativeBase, mapped_column
 
-metadata_metadata = MetaData(schema = "metadata")
+ingestion_tracker = MetaData(schema = "metadata")
 
 class Base(DeclarativeBase):
-    metadata = metadata_metadata
+    metadata = ingestion_tracker
 
 class IngestedFiles(Base):
     __tablename__ = "ingested_files"
