@@ -1,10 +1,11 @@
 import os
 import boto3
-from botocore.client import BaseClient
-from botocore.exceptions import UnknownServiceError
 import pandas as pd
 import polars as pl
+
 from io import BytesIO, StringIO
+from botocore.client import BaseClient
+from botocore.exceptions import UnknownServiceError
 
 # https://stackoverflow.com/questions/53416226/how-to-write-parquet-file-from-pandas-dataframe-in-s3-in-python
 # https://stackoverflow.com/questions/75115246/with-python-is-there-a-way-to-load-a-polars-dataframe-directly-into-an-s3-bucke

@@ -1,11 +1,11 @@
 import argparse
-from core import NIBRSUnzip
+
 from pathlib import Path
+
+from core import NIBRSUnzip
 
 def main(nibrs_master_file: str):
     '''
-    nibrs_master_file: Path to NIBRS master file (.zip). The FBI makes one master file available per year.
-    
     Takes nibrs_master_file, then unzips it in the same directory.
     '''
     nibrs = NIBRSUnzip(Path(nibrs_master_file))

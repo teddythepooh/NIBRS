@@ -1,8 +1,8 @@
 import pandas as pd
+
 from io import StringIO
-# from zipfile import ZipFile
-from zipfile_deflate64 import ZipFile
 from pathlib import Path
+from zipfile_deflate64 import ZipFile
 
 class NIBRSUnzip:
     def __init__(self, zip_file: Path):

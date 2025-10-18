@@ -17,7 +17,7 @@ def get_year(file_name: str) -> int:
     else:
         raise ValueError(f"Expected file name as nibrs-${{year}}.txt, not {file_name}.")
 
-def main(args: argparse.Namespace) -> None:
+def main(args: argparse.Namespace):
     config = general.load_yaml(args.config_file)
     s3_bucket = config["s3_bucket"]
     
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", "-o", 
                         default = "output")
     parser.add_argument("--config_file", "-c", 
-                        help = ".yaml file with segment_level_codes and s3_bucket keys",
+                        help = ".yml file with segment_level_codes and s3_bucket keys",
                         default = "configuration/col_specs.yml")
     parser.add_argument("--to_s3",
                         help = "if toggled, the segment will be uploaded to an S3 bucket",

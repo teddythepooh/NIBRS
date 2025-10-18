@@ -1,6 +1,7 @@
 import argparse
+
 from core import general, AmazonS3
-from db_design import Postgres, raw_tables
+from db_design import Postgres
 
 def main(args: argparse.Namespace):
     '''
@@ -22,7 +23,7 @@ def main(args: argparse.Namespace):
     for file_name in parquet_files:
         table_name = file_name.replace(".parquet", "").rsplit("_", 1)[0]
         
-        print(f"\nProcessing {file_name}...")
+        print(f"Processing {file_name}...")
         
         table = S3.read_parquet_file_from_s3_bucket(
             bucket_name = bucket_name,
@@ -32,7 +33,6 @@ def main(args: argparse.Namespace):
         postgres.ingest_table_into_db(
             table_to_ingest = table,
             db_table = f"raw.{table_name}",
-            table_base = raw_tables.Base,
             source_file = file_name
         )
 

@@ -1,14 +1,20 @@
-from core import general
-from db_design import Postgres, raw_tables, metadata_table
+import argparse
 
 from sqlalchemy import Engine
-from sqlalchemy.orm import DeclarativeBase
+from types import ModuleType
 
-def create_tables(table_base: DeclarativeBase, 
+from core import general
+from db_design import Postgres
+
+def create_tables(table_base: ModuleType, 
                   sqlalchemy_engine: Engine, 
-                  postgres_config: dict):
+                  postgres_config: dict) -> None:
     """
-    Creates table(s) in database based on metadata defined in table_base.
+    table_base: SQLAlchemy module that defines tables and corresponding metadata.
+    sqlalchemy_engine: A SQLAlchemy engine with proper credentials.
+    postgres_config: A dictionary with a schemas key.
+    
+    Creates tables based on table_base's configuration.
     """
     schema = table_base.Base.metadata.schema
     
@@ -17,11 +23,10 @@ def create_tables(table_base: DeclarativeBase,
     else:
         raise Exception(f"'{schema}' schema not found in postgres_config['schemas'].")
 
-def main():
+def main(config_file: dict):
     '''
     Creates database and schemas based on config_file["postgresql"]. Finally, creates tables in raw and metadata schemas.
     '''
-    config_file = general.load_yaml("./configuration/config.yml")
     postgres_config = config_file["postgresql"]
     
     print("Created database, schemas, and tables...")
@@ -29,10 +34,14 @@ def main():
     db_config.initialize_database()
 
     sqlalchemy_engine = db_config.create_sqlalchemy_engine()
-    create_tables(metadata_table, sqlalchemy_engine, postgres_config)
-    create_tables(raw_tables, sqlalchemy_engine, postgres_config)
+    create_tables(Postgres.raw_schema, sqlalchemy_engine, postgres_config)
+    create_tables(Postgres.metadata_schema, sqlalchemy_engine, postgres_config)
     
     print("Done.")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", help = ".yml file with postgresql key, under which exists credentials and schemas keys")
+    args = parser.parse_args()
+    
+    main(config_file = general.load_yaml(args.f))
