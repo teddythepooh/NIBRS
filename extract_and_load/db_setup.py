@@ -10,11 +10,11 @@ def create_tables(table_base: ModuleType,
                   sqlalchemy_engine: Engine, 
                   postgres_config: dict) -> None:
     """
-    table_base: SQLAlchemy module that configures tables and corresponding metadata.
+    table_base: SQLAlchemy module that defines tables and corresponding metadata.
     sqlalchemy_engine: A SQLAlchemy engine with proper credentials.
     postgres_config: A dictionary with a schemas key.
     
-    Creates tables
+    Creates tables based on table_base's configuration.
     """
     schema = table_base.Base.metadata.schema
     
